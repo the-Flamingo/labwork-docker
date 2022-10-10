@@ -1,2 +1,2 @@
 #!/bin/bash
-./controller.py "$@"
+./my_solution.py "$@"
