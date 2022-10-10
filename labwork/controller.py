@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+#
+# License: CC-0
 
 import sys
 import json

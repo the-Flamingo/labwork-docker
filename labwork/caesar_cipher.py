@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 def handle_caesar(assignment):
     action = assignment["action"]
     #print("Recieved Assignment. Action is %s" % action)

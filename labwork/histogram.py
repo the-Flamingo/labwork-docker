@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 def handle_histogram(assignment):
     characters = {}
     for char in assignment["text"]:
