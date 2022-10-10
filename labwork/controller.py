@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import sys
 import json
 import requests
@@ -40,4 +42,3 @@ for testcase in assignment["testcases"]:
         print("Passed a test! %s" % (testcase["type"]))
     else:
         print(submission_result)
-
