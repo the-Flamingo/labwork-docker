@@ -8,6 +8,7 @@ from histogram import handle_histogram
 from caesar_cipher import handle_caesar
 from password_keyspace import handle_keyspace
 from mul_gf2_128 import handle_mul_gf2_128
+from block_cipher import handle_block_cipher
 
 if len(sys.argv) != 4:
     print("syntax: %s [API endpoint URI] [client ID] [assignment_name]" % (sys.argv[0]))
@@ -37,6 +38,8 @@ for testcase in assignment["testcases"]:
         response = handle_keyspace(testcase["assignment"])
     elif testcase["type"] == "mul_gf2_128":
         response = handle_mul_gf2_128(testcase["assignment"])
+    elif testcase["type"] == "block_cipher":
+        response = handle_block_cipher(testcase["assignment"])
     else:
         print("Do not know how to handle type: %s" % (testcase["type"]))
         unknown_assignment_count += 1

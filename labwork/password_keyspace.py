@@ -23,13 +23,13 @@ def handle_keyspace(assignment):
             number += char
         else:
             special += char
-
+    '''
     print("Alphabet is: " + alphabet)
     print(len(alphabet))
     print(upper, lower, number, special)
     print(len(upper), len(lower), len(number), len(special))
     print(len(upper+lower+number))
-    '''
+    
     at_least_one_special_char (anything but A-Z, a-z and 0-9)
     at_least_one_uppercase_char (A-Z)
     at_least_one_lowercase_char (a-z)
@@ -49,26 +49,26 @@ def handle_keyspace(assignment):
     '''
 
     result = pow(len(alphabet), length)
-    print("Base is", result)
+    #print("Base is", result)
     if "no_consecutive_same_char" in restrictions:
         result = len(alphabet)*pow(len(alphabet)-1, length-1)
-        print("CONCHAR changed the result to", result)
+        #print("CONCHAR changed the result to", result)
     if "at_least_one_special_char" in restrictions:
         result -= pow(len(upper+lower+number),length)
-        print("SPECIAL deducted %i from the result. It's now %i" % (pow(len(upper+lower+number),length),result))
+        #print("SPECIAL deducted %i from the result. It's now %i" % (pow(len(upper+lower+number),length),result))
     if "at_least_one_uppercase_char" in restrictions:
         result -= pow(len(lower+number+special),length)
-        print("UPPER deducted %i from the result. It's now %i" % (pow(len(lower+number+special),length),result))
+        #print("UPPER deducted %i from the result. It's now %i" % (pow(len(lower+number+special),length),result))
     if "at_least_one_lowercase_char" in restrictions:
         result -= pow(len(upper+number+special),length)
-        print("LOWER deducted %i from the result. It's now %i" % (pow(len(upper+number+special),length),result))
+        #print("LOWER deducted %i from the result. It's now %i" % (pow(len(upper+number+special),length),result))
     if "at_least_one_digit" in restrictions:
         result -= pow(len(upper+lower+special),length)
-        print("NUMBER deducted %i from the result. It's now %i" % (pow(len(upper+lower+special),length),result))
+        #print("NUMBER deducted %i from the result. It's now %i" % (pow(len(upper+lower+special),length),result))
     if "special_char_not_last_place" in restrictions:
         result -= pow(len(alphabet), length-1)*len(special)
-        print("LASTSPECIAL deducted %i from the result. It's now %i" % (pow(len(alphabet), length-1)*len(special),result))
-    print("Final is ", result)
+        #print("LASTSPECIAL deducted %i from the result. It's now %i" % (pow(len(alphabet), length-1)*len(special),result))
+    #print("Final is ", result)
     return {"count": result}
     
     
