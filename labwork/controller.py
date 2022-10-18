@@ -40,7 +40,6 @@ for testcase in assignment["testcases"]:
         response = handle_mul_gf2_128(testcase["assignment"])
     elif testcase["type"] == "block_cipher":
         response = handle_block_cipher(testcase["assignment"])
-        print(response)
     else:
         print("Do not know how to handle type: %s" % (testcase["type"]))
         unknown_assignment_count += 1
