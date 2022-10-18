@@ -1,74 +1,47 @@
+from itertools import product
+
 def handle_keyspace(assignment):
     alphabet = assignment["alphabet"]
     length = assignment["length"]
     restrictions = assignment["restrictions"]
 
-    # A-Z: 65 - 90
-    # a-z: 97 - 122
-    # 0-9: 48 - 57
-    # Special: else
-
-    upper = []
-    lower = []
-    number = []
-    special = []
-
-    for char in alphabet:
-        #print("Charakter is: " + char)
-        if ord(char) > 64 and ord(char) < 91:
-            upper += char
-        elif ord(char) > 96 and ord(char) < 123:
-            lower += char
-        elif ord(char) > 47 and ord(char) < 58:
-            number += char
-        else:
-            special += char
-    '''
-    print("Alphabet is: " + alphabet)
-    print(len(alphabet))
-    print(upper, lower, number, special)
-    print(len(upper), len(lower), len(number), len(special))
-    print(len(upper+lower+number))
+    passwords = ["".join(item) for item in product(alphabet, repeat=length)]
     
-    at_least_one_special_char (anything but A-Z, a-z and 0-9)
-    at_least_one_uppercase_char (A-Z)
-    at_least_one_lowercase_char (a-z)
-    at_least_one_digit (0-9)
-    no_consecutive_same_char (e.g, abcd is permitted but abbc is not)
-    special_char_not_last_place (The last character of all the passwords may not be a special character)
-    '''
+    def is_failing_restriction(restriction, password):
+        special = []
+        upper = []
+        lower = []
+        number = []
 
-    '''
-    count ist len(alphabet)^length
-    wenn no_consec_char:
-        count ist len(alphabet)*pow(len(alphabet)-1, length-1)
-        das erste ist frei, alle anderen sind um das voherige (1) eingeschränkt
-    wenn bspw. a.l.o.special:
-        gesamtcount muss um die Anzahl der Passwörter reduziert werden, die keine specials enthalten
-            aka. len(upper,lower,digit)^length
-    '''
+        for char in alphabet:
+            if ord(char) > 64 and ord(char) < 91:
+                upper += char
+            elif ord(char) > 96 and ord(char) < 123:
+                lower += char
+            elif ord(char) > 47 and ord(char) < 58:
+                number += char
+            else:
+                special += char
 
-    result = pow(len(alphabet), length)
-    #print("Base is", result)
-    if "no_consecutive_same_char" in restrictions:
-        result = len(alphabet)*pow(len(alphabet)-1, length-1)
-        #print("CONCHAR changed the result to", result)
-    if "at_least_one_special_char" in restrictions:
-        result -= pow(len(upper+lower+number),length)
-        #print("SPECIAL deducted %i from the result. It's now %i" % (pow(len(upper+lower+number),length),result))
-    if "at_least_one_uppercase_char" in restrictions:
-        result -= pow(len(lower+number+special),length)
-        #print("UPPER deducted %i from the result. It's now %i" % (pow(len(lower+number+special),length),result))
-    if "at_least_one_lowercase_char" in restrictions:
-        result -= pow(len(upper+number+special),length)
-        #print("LOWER deducted %i from the result. It's now %i" % (pow(len(upper+number+special),length),result))
-    if "at_least_one_digit" in restrictions:
-        result -= pow(len(upper+lower+special),length)
-        #print("NUMBER deducted %i from the result. It's now %i" % (pow(len(upper+lower+special),length),result))
-    if "special_char_not_last_place" in restrictions:
-        result -= pow(len(alphabet), length-1)*len(special)
-        #print("LASTSPECIAL deducted %i from the result. It's now %i" % (pow(len(alphabet), length-1)*len(special),result))
-    #print("Final is ", result)
+
+        if "at_least_one_special_char" in restriction:
+            return not any(char in special for char in password)
+        elif "at_least_one_uppercase_char" in restriction:
+            return not any(char in upper for char in password)
+        elif "at_least_one_lowercase_char" in restriction:
+            return not any(char in lower for char in password)
+        elif "at_least_one_digit" in restriction:
+            return not any(char in number for char in password)
+        elif "no_consecutive_same_char" in restriction:
+            return any(char == password[index + 1] for index, char in enumerate(password[:-1]))
+        elif "special_char_not_last_place" in restriction:
+            return password[-1] in special 
+
+    result = 0
+    for password in passwords:
+        if not any(is_failing_restriction(res, password) for res in assignment["restrictions"]):
+            result += 1
+
+    #print(result)
     return {"count": result}
-    
     
