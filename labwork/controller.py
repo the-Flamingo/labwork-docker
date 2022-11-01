@@ -10,6 +10,9 @@ from password_keyspace import handle_keyspace
 from mul_gf2_128 import handle_mul_gf2_128
 from block_cipher import handle_block_cipher
 from pkcs7_padding import handle_pkcs7
+from cbc_key_equals_iv import handle_cbc_key_equals_iv
+from gcm_block_to_poly import handle_gcm_block_to_poly
+from gcm_mul_gf2_128 import handle_gcm_mul_gf2_128
 
 if len(sys.argv) != 4:
     print("syntax: %s [API endpoint URI] [client ID] [assignment_name]" % (sys.argv[0]))
@@ -40,9 +43,15 @@ for testcase in assignment["testcases"]:
     elif testcase["type"] == "mul_gf2_128":
         response = handle_mul_gf2_128(testcase["assignment"])
     elif testcase["type"] == "block_cipher":
-        response = handle_block_cipher(testcase["assignment"])
+        response = handle_block_cipher(testcase["assignment"], api_endpoint)
     elif testcase["type"] == "pkcs7_padding":
         response = handle_pkcs7(testcase["assignment"], api_endpoint)
+    elif testcase["type"] == "cbc_key_equals_iv":
+        response = handle_cbc_key_equals_iv(testcase["assignment"], api_endpoint)
+    elif testcase["type"] == "gcm_block_to_poly":
+        response = handle_gcm_block_to_poly(testcase["assignment"])
+    elif testcase["type"] == "gcm_mul_gf2_128":
+        response = handle_gcm_mul_gf2_128(testcase["assignment"])
     else:
         print("Do not know how to handle type: %s" % (testcase["type"]))
         unknown_assignment_count += 1
