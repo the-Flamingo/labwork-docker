@@ -4,27 +4,26 @@ import json
 from mul_gf2_128 import handle_mul_gf2_128
 
 block_size = 16
-endpoint = "https://dhbw.johannes-bauer.com/lwsub/oracle/block_cipher"
 session = requests.Session()
 
-def handle_block_cipher(assignment):
+def handle_block_cipher(assignment, endpoint):
     opmode = assignment["opmode"]
     operation = assignment["operation"]
 
     if opmode == "cbc" and operation == "encrypt":
-        return encrypt_cbc(assignment)
+        return encrypt_cbc(assignment, endpoint)
     elif opmode == "cbc" and operation == "decrypt":
-        return decrypt_cbc(assignment)
+        return decrypt_cbc(assignment, endpoint)
     elif opmode == "ctr":
-        return handle_crt(assignment)
+        return handle_crt(assignment, endpoint)
     elif opmode == "xex" and operation == "encrypt":
-        return encrypt_xex(assignment)
+        return encrypt_xex(assignment, endpoint)
     elif opmode == "xex" and operation == "decrypt":
-        return decrypt_xex(assignment)
+        return decrypt_xex(assignment, endpoint)
     else:
         print("Error while handeling Assignment")
 
-def encrypt_cbc(assignment):
+def encrypt_cbc(assignment, endpoint):
     iv = assignment["iv"]
     plaintext = assignment["plaintext"]
 
@@ -49,13 +48,13 @@ def encrypt_cbc(assignment):
             "key": assignment["key"],
             "plaintext": base64.b64encode(int.to_bytes(int.from_bytes(textblocks[0], byteorder="little") ^ int_iv, byteorder="little", length=16)).decode('utf-8')
         }
-    request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+    request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload))
     json_first_cipher = request.json()
     cipherblocks.append( int.from_bytes(base64.b64decode( json_first_cipher["ciphertext"] ), byteorder="little") )
     
     for i in range(1, len(textblocks)):
         payload["plaintext"] = base64.b64encode(int.to_bytes(int.from_bytes(textblocks[i], byteorder="little") ^ cipherblocks[i-1], byteorder="little", length=16)).decode('utf-8')
-        request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+        request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload))
         json_request = request.json()
         cipherblocks.append(int.from_bytes(base64.b64decode( json_request["ciphertext"] ), byteorder="little"))
     #print(cipherblocks)
@@ -70,7 +69,7 @@ def encrypt_cbc(assignment):
     result = base64.b64encode(concat).decode('utf-8')
     return {"ciphertext": result}
 
-def decrypt_cbc(assignment):
+def decrypt_cbc(assignment, endpoint):
     iv = assignment["iv"]
     ciphertext = assignment["ciphertext"]
 
@@ -90,13 +89,13 @@ def decrypt_cbc(assignment):
             "key": assignment["key"],
             "ciphertext": base64.b64encode(int.to_bytes(int.from_bytes(cipherblocks[0], byteorder="little"), byteorder="little", length=16)).decode('utf-8')
         }
-    request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+    request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload))
     json_first_text = request.json()
     textblocks.append( int.from_bytes(base64.b64decode( json_first_text["plaintext"] ), byteorder="little") ^ int_iv)
     
     for i in range(1, len(cipherblocks)):
         payload["ciphertext"] = base64.b64encode(int.to_bytes(int.from_bytes(cipherblocks[i], byteorder="little"), byteorder="little", length=16)).decode('utf-8')
-        request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+        request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload))
         json_request = request.json()
         textblocks.append(int.from_bytes(base64.b64decode( json_request["plaintext"] ), byteorder="little") ^ int.from_bytes(cipherblocks[i-1], byteorder="little"))
     #print(textblocks)
@@ -110,7 +109,7 @@ def decrypt_cbc(assignment):
     result = base64.b64encode(concat).decode('utf-8')
     return {"plaintext": result}
 
-def handle_crt(assignment):
+def handle_crt(assignment, endpoint):
     counter = 0
     nonce = base64.b64decode(assignment["nonce"])
     #print(nonce)
@@ -132,7 +131,7 @@ def handle_crt(assignment):
             "key": assignment["key"],
             "plaintext": base64.b64encode((nonce + counter.to_bytes(length=4, byteorder="big"))).decode('utf-8')
         }
-        request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+        request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload))
         json_first_text = request.json()
         #print(json_first_text)
         cipherblocks.append(int.from_bytes(base64.b64decode(json_first_text["ciphertext"]), byteorder="little") ^ int.from_bytes(blocks[i], byteorder="little"))
@@ -150,7 +149,7 @@ def handle_crt(assignment):
     else:
         return {"plaintext": result}
 
-def encrypt_xex(assignment): 
+def encrypt_xex(assignment, endpoint): 
     plaintext = base64.b64decode(assignment["plaintext"])
     bigkey = base64.b64decode(assignment["key"])
     tweak = assignment["tweak"]
@@ -160,7 +159,7 @@ def encrypt_xex(assignment):
     #print(key1, key2)
 
     payload = { "operation": "encrypt", "key": base64.b64encode(key2).decode('utf-8'), "plaintext": tweak }
-    request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
+    request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
     tweak = int.from_bytes(base64.b64decode(request["ciphertext"]), byteorder="little")
     
 
@@ -174,7 +173,7 @@ def encrypt_xex(assignment):
     for i in range(len(textblocks)):
         payload = { "operation": "encrypt", "key": base64.b64encode(key1).decode('utf-8'),
                     "plaintext": base64.b64encode(int.to_bytes(int.from_bytes(textblocks[i], byteorder="little") ^ tweak ,byteorder="little",length=16)).decode('utf-8') }
-        request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
+        request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
         #print(request)
         cipherblocks.append(int.to_bytes(int.from_bytes( base64.b64decode(request["ciphertext"]) ,byteorder="little")^tweak ,byteorder="little", length=16))
         times_alpha = handle_mul_gf2_128({"block": base64.b64encode(int.to_bytes(tweak, byteorder="little", length=16))})
@@ -185,7 +184,7 @@ def encrypt_xex(assignment):
     result = base64.b64encode(concat).decode('utf-8')
     return {"ciphertext": result}
 
-def decrypt_xex(assignment):
+def decrypt_xex(assignment, endpoint):
     ciphertext = base64.b64decode(assignment["ciphertext"])
     bigkey = base64.b64decode(assignment["key"])
     tweak = assignment["tweak"]
@@ -195,7 +194,7 @@ def decrypt_xex(assignment):
     #print(key1, key2)
 
     payload = { "operation": "encrypt", "key": base64.b64encode(key2).decode('utf-8'), "plaintext": tweak }
-    request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
+    request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
     tweak = int.from_bytes(base64.b64decode(request["ciphertext"]), byteorder="little")
     
 
@@ -209,7 +208,7 @@ def decrypt_xex(assignment):
     for i in range(len(cipherblocks)):
         payload = { "operation": "decrypt", "key": base64.b64encode(key1).decode('utf-8'),
                     "ciphertext": base64.b64encode(int.to_bytes(int.from_bytes(cipherblocks[i], byteorder="little") ^ tweak ,byteorder="little",length=16)).decode('utf-8') }
-        request = session.post(endpoint, headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
+        request = session.post(endpoint + "/oracle/block_cipher", headers={"Content-Type": "application/json"}, data=json.dumps(payload)).json()
         #print(request)
         textblocks.append(int.to_bytes(int.from_bytes( base64.b64decode(request["plaintext"]) ,byteorder="little")^tweak ,byteorder="little", length=16))
         times_alpha = handle_mul_gf2_128({"block": base64.b64encode(int.to_bytes(tweak, byteorder="little", length=16))})
