@@ -50,7 +50,7 @@ def handle_rc4_fms(assignment, api_endpoint, tcid):
             payload = {"key": base64.b64encode(key).decode("utf-8")}
             request = session.post(api_endpoint + "/submission/" + tcid, headers={"Content-Type": "application/json", "Accept": "application/json"}, json = payload).json()
             if request["status"] == "pass":
-                print("Success with: " + base64.b64encode(key).decode("utf-8"))
+                #print("Success!", base64.b64encode(key).decode("utf-8"))
                 session.close()
                 return {"key": base64.b64encode(key).decode("utf-8")} 
                      
