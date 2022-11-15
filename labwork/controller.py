@@ -14,6 +14,7 @@ from cbc_key_equals_iv import handle_cbc_key_equals_iv
 from gcm_block_to_poly import handle_gcm_block_to_poly
 from gcm_mul_gf2_128 import handle_gcm_mul_gf2_128
 from rc4_fms import handle_rc4_fms
+from chi_square import handle_chi_square
 
 if len(sys.argv) != 4:
     print("syntax: %s [API endpoint URI] [client ID] [assignment_name]" % (sys.argv[0]))
@@ -55,6 +56,8 @@ for testcase in assignment["testcases"]:
         response = handle_gcm_mul_gf2_128(testcase["assignment"])
     elif testcase["type"] == "rc4_fms":
         response = handle_rc4_fms(testcase["assignment"], api_endpoint, testcase["tcid"])
+    elif testcase["type"] == "chi_square":
+        response = handle_chi_square(testcase["assignment"])
     else:
         print("Do not know how to handle type: %s" % (testcase["type"]))
         unknown_assignment_count += 1
