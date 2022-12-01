@@ -17,6 +17,7 @@ from rc4_fms import handle_rc4_fms
 from chi_square import handle_chi_square
 from timing_sidechannel import handle_timing_sidechannel
 from rsa_crt_fault_injection import handle_rsa_crt_fault_injection
+from glasskey import handle_glasskey
 
 if len(sys.argv) != 4:
     print("syntax: %s [API endpoint URI] [client ID] [assignment_name]" % (sys.argv[0]))
@@ -64,6 +65,8 @@ for testcase in assignment["testcases"]:
         response = handle_timing_sidechannel(testcase["assignment"], api_endpoint)
     elif testcase["type"] == "rsa_crt_fault_injection":
         response = handle_rsa_crt_fault_injection(testcase["assignment"])
+    elif testcase["type"] == "glasskey":
+        response = handle_glasskey(testcase["assignment"])
     else:
         print("Do not know how to handle type: %s" % (testcase["type"]))
         unknown_assignment_count += 1
